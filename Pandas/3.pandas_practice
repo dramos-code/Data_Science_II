@@ -1,0 +1,856 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "9796fd0d",
+   "metadata": {},
+   "source": [
+    "# Pandas Data Science Lab — School Store Transactions\n",
+    "**Name:** _______________________  **Date:** _______________\n",
+    "\n",
+    "Work through **26 core questions** and **8 optional advanced challenges**. The dataset is synthetic, created in this notebook; no separate CSV download is required.\n",
+    "\n",
+    "**Rules:** Run the setup cell. Answer each question in its blank code cell, keep outputs visible, and explain results when asked. Use the slide deck as a reference. Do not modify the raw `orders` object unless a question explicitly asks; make copies for cleaning."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5fd6c942",
+   "metadata": {},
+   "source": [
+    "## Dataset setup (run this cell once)\n",
+    "Each row represents a transaction. Columns include order date, region, product, category, unit price, units, discount, payment method, member status, age, rating, and shipping days. The dataset intentionally includes a few duplicates, missing values, inconsistent region spellings, and invalid unit counts."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b110a0c8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "\n",
+    "# Reproducible fictional school-store transactions.\n",
+    "rng = np.random.default_rng(2026)\n",
+    "products = [\"Notebook\", \"Calculator\", \"Backpack\", \"Water Bottle\",\n",
+    "            \"Planner\", \"Markers\", \"Binder\", \"Laptop Sleeve\"]\n",
+    "categories = [\"Paper\", \"Electronics\", \"Bags\", \"Accessories\",\n",
+    "              \"Paper\", \"Art\", \"Paper\", \"Accessories\"]\n",
+    "prices = [4.50, 18.00, 32.00, 12.00, 8.00, 6.50, 5.00, 22.00]\n",
+    "costs = [1.80, 10.50, 19.00, 5.00, 3.40, 2.60, 1.70, 12.00]\n",
+    "\n",
+    "n = 180\n",
+    "product_ids = rng.integers(0, len(products), size=n)\n",
+    "orders = pd.DataFrame({\n",
+    "    \"Order_ID\": [f\"S{1000+i}\" for i in range(n)],\n",
+    "    \"Order_Date\": pd.to_datetime(rng.choice(\n",
+    "        pd.date_range(\"2026-09-01\", periods=120), size=n\n",
+    "    )).strftime(\"%Y-%m-%d\"),\n",
+    "    \"Product\": np.array(products)[product_ids],\n",
+    "    \"Category\": np.array(categories)[product_ids],\n",
+    "    \"Unit_Price\": np.array(prices)[product_ids],\n",
+    "    \"Units\": rng.integers(1, 7, size=n),\n",
+    "    \"Discount\": rng.choice([0.00, 0.05, 0.10, 0.20],\n",
+    "                           size=n, p=[0.48, 0.20, 0.24, 0.08]),\n",
+    "    \"Region\": rng.choice([\"North\", \"South\", \"East\", \"West\",\n",
+    "                          \"north\", \" EAST \", \"west \"], size=n),\n",
+    "    \"Payment_Method\": rng.choice([\"Card\", \"Cash\", \"Online\"], size=n),\n",
+    "    \"Member\": rng.choice([\"Yes\", \"No\"], size=n),\n",
+    "    \"Customer_Age\": rng.integers(15, 66, size=n).astype(float),\n",
+    "    \"Rating\": rng.integers(1, 6, size=n).astype(float),\n",
+    "    \"Shipping_Days\": rng.integers(1, 9, size=n)\n",
+    "})\n",
+    "\n",
+    "# Intentional data-quality issues for cleaning practice.\n",
+    "orders.loc[[5, 22, 79, 114, 156], \"Rating\"] = np.nan\n",
+    "orders.loc[[12, 41, 92], \"Customer_Age\"] = np.nan\n",
+    "orders.loc[[17, 83], \"Units\"] = -2\n",
+    "orders = pd.concat([orders, orders.iloc[[4, 25, 90, 140]]],\n",
+    "                   ignore_index=True)\n",
+    "\n",
+    "# Two reference tables for the advanced merge problems.\n",
+    "product_lookup = pd.DataFrame({\n",
+    "    \"Product\": products,\n",
+    "    \"Supplier_Cost\": costs\n",
+    "})\n",
+    "region_targets = pd.DataFrame({\n",
+    "    \"Region\": [\"North\", \"South\", \"East\", \"West\"],\n",
+    "    \"Revenue_Target\": [1700, 1700, 1700, 1700]\n",
+    "})\n",
+    "\n",
+    "print(\"Dataset ready!\", orders.shape)\n",
+    "print(orders.head(3))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "95442aaf",
+   "metadata": {},
+   "source": [
+    "## Only completed example — selecting a column\n",
+    "A Pandas column is selected using brackets and its name. This displays the first five products; now complete the rest yourself."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5ca8d85a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "orders[\"Product\"].head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c2749c12",
+   "metadata": {},
+   "source": [
+    "# Part A — Inspecting and Selecting Data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7342deab",
+   "metadata": {},
+   "source": [
+    "### 1. Inspect the dataset\n",
+    "Display the first 8 rows and the last 5 rows. How many rows and columns are present?\n",
+    "\n",
+    "*Syntax reference:* `head()`, `tail()`, `shape`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8ce1e93b",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8ca11460",
+   "metadata": {},
+   "source": [
+    "### 2. Describe columns\n",
+    "List all column names, inspect data types, and run a compact dataset summary.\n",
+    "\n",
+    "*Syntax reference:* `columns`, `dtypes`, `info()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ae67a500",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1db23b23",
+   "metadata": {},
+   "source": [
+    "### 3. Select columns\n",
+    "Show only `Order_ID`, `Product`, `Units`, and `Unit_Price` for the first 10 rows.\n",
+    "\n",
+    "*Syntax reference:* `df[[\"A\", \"B\"]]`, `head()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3ad2152b",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2fc4e30d",
+   "metadata": {},
+   "source": [
+    "### 4. Select with loc and iloc\n",
+    "Use `.loc` to retrieve the product at row label 7 and `.iloc` to retrieve the value at row position 7 in column position 2. Explain why the two answers agree.\n",
+    "\n",
+    "*Syntax reference:* `.loc[row_label, \"Column\"]`, `.iloc[row_pos, col_pos]`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7f53d7d2",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5e6493f1",
+   "metadata": {},
+   "source": [
+    "### 5. Find the unique categories\n",
+    "Display all distinct product categories and calculate how many transactions belong to each.\n",
+    "\n",
+    "*Syntax reference:* `unique()`, `value_counts()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e0ecdae3",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d16517ef",
+   "metadata": {},
+   "source": [
+    "### 6. Order size distribution\n",
+    "Count how many orders have each `Units` value. Do any values seem invalid?\n",
+    "\n",
+    "*Syntax reference:* `value_counts()`, `sort_index()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6a503a24",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "267a8a26",
+   "metadata": {},
+   "source": [
+    "### 7. Sort by price\n",
+    "Display the 12 transactions with the highest unit prices, including their products and regions.\n",
+    "\n",
+    "*Syntax reference:* `sort_values(..., ascending=False)`, `head()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "750cb751",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "95fed591",
+   "metadata": {},
+   "source": [
+    "### 8. Save and reload a CSV\n",
+    "Save the current dataset to a CSV without its index, reload it, and verify the shape matches.\n",
+    "\n",
+    "*Syntax reference:* `to_csv(..., index=False)`, `pd.read_csv()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d9407c00",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a494480d",
+   "metadata": {},
+   "source": [
+    "# Part B — Filtering, New Columns, and Summaries"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4f704de8",
+   "metadata": {},
+   "source": [
+    "### 9. Large purchases\n",
+    "Filter orders containing at least 5 units. How many rows remain?\n",
+    "\n",
+    "*Syntax reference:* Boolean mask and `len()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4591fc99",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bf1ffe5d",
+   "metadata": {},
+   "source": [
+    "### 10. Two conditions\n",
+    "Find transactions from the `North` region where the unit price exceeds $10. Explain why lowercase `north` is not included yet.\n",
+    "\n",
+    "*Syntax reference:* `&`, parentheses around each condition"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "d50f2429",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f56e9df7",
+   "metadata": {},
+   "source": [
+    "### 11. Either condition\n",
+    "Find transactions where payment was `Cash` OR the customer was a member.\n",
+    "\n",
+    "*Syntax reference:* `|`, parentheses"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f38701f8",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c0d21cda",
+   "metadata": {},
+   "source": [
+    "### 12. Gross revenue\n",
+    "Create `Gross_Revenue` = `Units × Unit_Price`. Show the first five results.\n",
+    "\n",
+    "*Syntax reference:* Column assignment and vectorized `*`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c504b531",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b05ab823",
+   "metadata": {},
+   "source": [
+    "### 13. Revenue after discounts\n",
+    "Create `Net_Revenue` = `Units × Unit_Price × (1 − Discount)`.\n",
+    "\n",
+    "*Syntax reference:* Vectorized arithmetic"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "446a296b",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8a139433",
+   "metadata": {},
+   "source": [
+    "### 14. Descriptive statistics\n",
+    "Summarize `Unit_Price`, `Units`, and `Net_Revenue` with numerical descriptive statistics.\n",
+    "\n",
+    "*Syntax reference:* `describe()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8e70ff7a",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c55f9b26",
+   "metadata": {},
+   "source": [
+    "### 15. Totals and averages\n",
+    "Calculate the total net revenue and average number of units per transaction. Are the negative-unit rows a concern?\n",
+    "\n",
+    "*Syntax reference:* `sum()`, `mean()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "cbc555c1",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3df912a2",
+   "metadata": {},
+   "source": [
+    "**Interpretation:** *Write your explanation here.*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "29cd6871",
+   "metadata": {},
+   "source": [
+    "### 16. Group by product category\n",
+    "Calculate average unit price and total net revenue for each product category.\n",
+    "\n",
+    "*Syntax reference:* `groupby()`, `mean()`, `sum()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e9f13e41",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c042f9e8",
+   "metadata": {},
+   "source": [
+    "### 17. Best-selling products\n",
+    "Find the top three products by total units sold. Use a grouped sum and sort.\n",
+    "\n",
+    "*Syntax reference:* `groupby()`, `sum()`, `sort_values()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1362f985",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ad97df98",
+   "metadata": {},
+   "source": [
+    "# Part C — Cleaning and Interpreting Data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d95280a8",
+   "metadata": {},
+   "source": [
+    "### 18. Check missing values\n",
+    "Count missing values in every column. Identify which variables need attention.\n",
+    "\n",
+    "*Syntax reference:* `isna().sum()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f4953298",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3e0fb304",
+   "metadata": {},
+   "source": [
+    "### 19. Identify duplicate rows\n",
+    "Count exact duplicate records and display the duplicated rows.\n",
+    "\n",
+    "*Syntax reference:* `duplicated(keep=False)`, `sum()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "161a89d2",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "75a46657",
+   "metadata": {},
+   "source": [
+    "### 20. Remove duplicates safely\n",
+    "Create a NEW DataFrame `clean_orders` with exact duplicates removed. Verify row counts before and after.\n",
+    "\n",
+    "*Syntax reference:* `drop_duplicates()`, `.copy()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6900e0ce",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d0a04f59",
+   "metadata": {},
+   "source": [
+    "### 21. Handle missing ratings\n",
+    "Create a new `Rating_Filled` column in `clean_orders` using the median rating. Keep the original Rating column for comparison.\n",
+    "\n",
+    "*Syntax reference:* `median()`, `fillna()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7eb81bd3",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "df442637",
+   "metadata": {},
+   "source": [
+    "### 22. Flag bad unit counts\n",
+    "Find nonpositive `Units` values, then create `valid_orders` containing only positive-unit records.\n",
+    "\n",
+    "*Syntax reference:* `df[df[\"Units\"] > 0]`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8bbd4164",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4f6dc61e",
+   "metadata": {},
+   "source": [
+    "### 23. Recalculate valid revenue\n",
+    "Create `Net_Revenue` for `valid_orders` and calculate the total. Compare it with the uncleaned total from Question 15.\n",
+    "\n",
+    "*Syntax reference:* Column assignment, `sum()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9adaccf2",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c0a0f040",
+   "metadata": {},
+   "source": [
+    "**Interpretation:** *Write your explanation here.*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "256e519a",
+   "metadata": {},
+   "source": [
+    "### 24. Compare regions\n",
+    "Calculate total valid net revenue by `Region`. Are some regions repeated because of inconsistent spelling?\n",
+    "\n",
+    "*Syntax reference:* `groupby()`, `sum()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "86e3adb3",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5bf64dbf",
+   "metadata": {},
+   "source": [
+    "### 25. Customer satisfaction\n",
+    "Calculate average rating for each payment method, ignoring missing ratings. Which payment method has the highest mean in these fictional data?\n",
+    "\n",
+    "*Syntax reference:* `groupby()[\"Rating\"].mean()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ee5a46bb",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1c3ccf56",
+   "metadata": {},
+   "source": [
+    "### 26. Write a short finding\n",
+    "Write 3–4 sentences interpreting TWO meaningful results. Mention at least one data-quality issue that could affect conclusions.\n",
+    "\n",
+    "*Syntax reference:* Use a Markdown cell below your code"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e8165512",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "37cd2954",
+   "metadata": {},
+   "source": [
+    "**Interpretation:** *Write your explanation here.*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b934d39b",
+   "metadata": {},
+   "source": [
+    "# Part D — Optional Advanced Challenges"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "edbc9dbf",
+   "metadata": {},
+   "source": [
+    "### 27. Normalize category strings\n",
+    "Create a cleaned Region column so `north`, `North`, ` EAST `, and similar values become consistent. Compare counts before and after.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `.str.strip().str.title()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "cc2fbda9",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "26b3ab33",
+   "metadata": {},
+   "source": [
+    "### 28. Analyze monthly revenue\n",
+    "Convert Order_Date into a datetime column, then group net revenue by month and identify the strongest month.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `pd.to_datetime()`, `.dt.to_period(\"M\")`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "85ffebdd",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "71735e43",
+   "metadata": {},
+   "source": [
+    "**Interpretation:** *Write your explanation here.*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "00938e78",
+   "metadata": {},
+   "source": [
+    "### 29. Multiple group statistics\n",
+    "For each cleaned region, calculate total revenue, number of orders, and average shipping days in ONE table.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `.groupby(...).agg(total=(\"Net_Revenue\", \"sum\"), ...)`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6f79dd0d",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bb17312f",
+   "metadata": {},
+   "source": [
+    "### 30. Build a pivot table\n",
+    "Create a table of summed net revenue, with cleaned regions as rows and Category as columns; fill missing combinations with 0.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `pd.pivot_table(data, values=..., index=..., columns=..., aggfunc=\"sum\", fill_value=0)`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ba37e99b",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2ff2c251",
+   "metadata": {},
+   "source": [
+    "### 31. Merge supplier costs\n",
+    "Merge valid orders with `product_lookup`, calculate per-order estimated profit after discounts, and identify the category with highest total profit.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `.merge(product_lookup, on=\"Product\", how=\"left\")`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1e632126",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2a3fa27a",
+   "metadata": {},
+   "source": [
+    "**Interpretation:** *Write your explanation here.*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "80d395d1",
+   "metadata": {},
+   "source": [
+    "### 32. Numeric correlation\n",
+    "Calculate correlations among Units, Unit_Price, Rating, Shipping_Days, and Net_Revenue. Explain why correlation does not establish causation.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `df[[...]].corr()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ee4047aa",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "efa8dcc9",
+   "metadata": {},
+   "source": [
+    "**Interpretation:** *Write your explanation here.*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "598eeefc",
+   "metadata": {},
+   "source": [
+    "### 33. Daily revenue and rolling average\n",
+    "Create one revenue total per date, sort chronologically, and calculate a rolling average over 7 recorded dates. Make a line plot if you have time.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `.groupby(\"Order_Date\").sum()`, `.rolling(7).mean()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "181fba65",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "20bee69a",
+   "metadata": {},
+   "source": [
+    "### 34. Customer behavior cross-tab\n",
+    "Build a frequency table of Member status against Payment_Method. Then calculate percentages by member group.\n",
+    "\n",
+    "*Syntax reference:* New syntax: `pd.crosstab(..., normalize=\"index\")`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e04311db",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ad4cb710",
+   "metadata": {},
+   "source": [
+    "## End-of-lab reflection\n",
+    "1. Which Pandas operations were most useful?\n",
+    "2. How did cleaning change the analysis?\n",
+    "3. Which advanced challenge would you use in a data science project?"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
